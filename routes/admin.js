@@ -4,6 +4,8 @@ const { adminModel } = require("../models/Admin");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const validateAdmin = require("../middlewares/admin");
+const { productModel } = require("../models/Product");
+const { categoryModel } = require("../models/Category");
 
 require("dotenv").config()
 
@@ -24,7 +26,7 @@ if (
             });
             await admin.save();
 
-            let token = jwt.sign({ email: "Kushagra@123.com" }, process.env.JWT_KEY)
+            let token = jwt.sign({ email: "Kushagra@123.com" , admin: true }, process.env.JWT_KEY)
             res.cookie("token", token)
             res.send("admin Created successfully")
         } catch(err){
@@ -43,14 +45,52 @@ if (
 
     let valid = await bcrypt.compare(password, admin.password);
     if(valid){
-        let token = jwt.sign({ email: "Kushagra@123.com" }, process.env.JWT_KEY)
+        let token = jwt.sign({ email: "Kushagra@123.com", admin: true }, process.env.JWT_KEY)
         res.cookie("token", token)
         res.redirect("/admin/dashboard")
     }
   })
   
-  router.get("/dashboard", validateAdmin  , (req,res)=>{
-    res.render("admin_Dashboard")
+  router.get("/dashboard", validateAdmin , async (req,res)=>{
+    let prodcount = await productModel.countDocuments();
+    let categcount = await categoryModel.countDocuments();
+    res.render("admin_Dashboard", {prodcount , categcount})
+  }) 
+   router.get("/products", validateAdmin  ,async (req,res)=>{
+    const result = await productModel.aggregate([
+      {
+        $group: {
+          _id: '$category',  // Group by the category field directly (as it's a String)
+          products: {
+            $push: {
+              _id: '$_id',
+              name: '$name',
+              category: '$category',  // Keep the category as String
+              price: '$price',
+              description: '$description',
+              stock: '$stock',
+              image: '$image',
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          category: '$_id',              // Rename _id to category
+          products: { $slice: ['$products', 10] }  // Limit products to the first 10
+        }
+      }
+    ]);
+  
+    // Transform the result into the desired format
+    const formattedResult = result.reduce((acc, categoryData) => {
+      acc[categoryData.category] = categoryData.products;
+      return acc;
+    }, {});
+  
+   res.render("admin_products", { products: formattedResult})
+   
   }) 
   router.get("/logout", validateAdmin  , (req,res)=>{
     res.cookie("token", "")

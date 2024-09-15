@@ -29,12 +29,15 @@
                         <div class="bg-white shadow rounded-lg mb-6 p-6">
                             <h2 class="text-2xl font-semibold text-gray-800">
                                 <%= key %>
+                                 
                             </h2>
                             <% products[key].forEach(function(elem){ %>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                                    <div class="bg-gray-50 p-4 rounded-lg shadow">
-                                        <img class="w-32 h-32 mb-3"
-                                            src="data:image/png;base64, <%= elem.image.toString('base64') %>" alt="">
+                                    <div class="bg-gray-100 p-4 rounded-lg shadow">
+                                        <div class="w-32 h-32 mb-3 overflow-hidden rounded-[2vw]">
+                                            <img class="w-full h-full object-cover"
+                                            src="data:image/jpg;base64, <%= elem.image.toString('base64') %>" alt="">
+                                        </div>
                                         <h3 class="text-lg font-medium text-gray-900">
                                             <%= elem.name %>
                                         </h3>

@@ -19,14 +19,14 @@ const productSchema = mongoose.Schema({
     trim: true,
   },
   stock: {
-    type: Boolean,
+    type: Number,
     required: true,
   },
   description: {
     type: String,
   },
   image: {
-    type: String,
+    type: Buffer,
   },
 }, { timestamps: true });
 
@@ -35,7 +35,7 @@ const validateProduct = (data) => {
     name: Joi.string().min(2).required().trim(),
     price: Joi.number().min(0).required(),
     category: Joi.string().required().trim(),
-    stock: Joi.boolean().required(),
+    stock: Joi.number().required(),
     description: Joi.string(), 
     image: Joi.string(), 
   });
